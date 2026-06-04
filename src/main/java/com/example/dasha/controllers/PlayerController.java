@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -31,17 +30,6 @@ public class PlayerController {
         return ResponseEntity.ok(minioService.listSongs());
     }
 
-    // Запустить стрим конкретной песни в Icecast
-    // POST /api/stream/play?fileKey=songs/Title – Artist.mp3
-    @PostMapping("/stream/play")
-    public ResponseEntity<Map<String, String>> play(@RequestParam String fileKey) {
-        playerService.startStream(fileKey);
-        return ResponseEntity.ok(Map.of(
-                "status", "streaming",
-                "fileKey", fileKey
-        ));
-    }
-
     // Запустить плейлист — все песни по кругу
     @PostMapping("/stream/play-all")
     public ResponseEntity<Map<String, String>> playAll() {
@@ -56,11 +44,20 @@ public class PlayerController {
         return ResponseEntity.ok(Map.of("status", "stopped"));
     }
 
-    // Статус стрима
+    // Статус стрима + текущий трек + позиция
     @GetMapping("/stream/status")
     public ResponseEntity<Map<String, Object>> status() {
-        return ResponseEntity.ok(Map.of(
-                "streaming", playerService.isStreaming()
-        ));
+        var map = new java.util.HashMap<String, Object>();
+        map.put("streaming", playerService.isStreaming());
+        map.put("currentSong", playerService.getCurrentSong());
+        map.put("positionSeconds", playerService.getPositionSeconds());
+        return ResponseEntity.ok(map);
+    }
+
+    // Только текущий трек (null если ничего не играет)
+    @GetMapping("/stream/current")
+    public ResponseEntity<Song> currentSong() {
+        Song song = playerService.getCurrentSong();
+        return song != null ? ResponseEntity.ok(song) : ResponseEntity.noContent().build();
     }
 }

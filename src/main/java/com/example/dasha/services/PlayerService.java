@@ -1,5 +1,6 @@
 package com.example.dasha.services;
 
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,30 +36,14 @@ public class PlayerService {
 
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private Thread streamThread;
+    @Getter
+    private volatile com.example.dasha.models.Song currentSong;
+    private volatile long streamStartMillis = 0;
 
     public PlayerService(MinioService minioService) {
         this.minioService = minioService;
     }
 
-    /**
-     * Запускает стрим песни из MinIO через ffmpeg в Icecast.
-     *
-     * @param fileKey путь к файлу в MinIO (например: songs/Title – Artist.mp3)
-     */
-    public void startStream(String fileKey) {
-        if (streaming.getAndSet(true)) {
-            stopStream();
-        }
-
-        streamThread = Thread.ofVirtual().start(() -> {
-            try {
-                InputStream songStream = minioService.getSongStream(fileKey);
-                pushToIcecast(songStream, fileKey);
-            } finally {
-                streaming.set(false);
-            }
-        });
-    }
 
     /**
      * Запускает непрерывный плейлист: все песни из MinIO по кругу.
@@ -78,6 +63,8 @@ public class PlayerService {
                 for (com.example.dasha.models.Song song : songs) {
                     if (!streaming.get() || Thread.currentThread().isInterrupted()) break;
                     log.info("Playing next: " + song.getFileKey());
+                    currentSong = song;
+                    streamStartMillis = System.currentTimeMillis();
                     InputStream songStream = minioService.getSongStream(song.getFileKey());
                     pushToIcecast(songStream, song.getFileKey());
                 }
@@ -88,6 +75,7 @@ public class PlayerService {
 
     public void stopStream() {
         streaming.set(false);
+        currentSong = null;
         if (streamThread != null) {
             streamThread.interrupt();
         }
@@ -95,6 +83,11 @@ public class PlayerService {
 
     public boolean isStreaming() {
         return streaming.get();
+    }
+
+    public double getPositionSeconds() {
+        if (!streaming.get() || streamStartMillis == 0) return 0;
+        return (System.currentTimeMillis() - streamStartMillis) / 1000.0;
     }
 
     // -------------------------------------------------------------------------
