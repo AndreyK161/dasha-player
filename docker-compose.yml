@@ -1,0 +1,62 @@
+services:
+
+  # ── Spring Boot app ────────────────────────────────────────────────────────
+  app:
+    build: .
+    container_name: dasha-app
+    ports:
+      - "8080:8080"
+    environment:
+      # MinIO
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS: ${MINIO_ACCESS}
+      MINIO_SECRET: ${MINIO_SECRET}
+      MINIO_BUCKETNAME: ${MINIO_BUCKETNAME:-player}
+      # Icecast
+      ICECAST_HOST: icecast
+      ICECAST_PORT: 8000
+      ICECAST_MOUNT: ${ICECAST_MOUNT:-stream}
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:-hackme}
+    depends_on:
+      minio:
+        condition: service_healthy
+      icecast:
+        condition: service_started
+    restart: unless-stopped
+
+  # ── MinIO ──────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - "9000:9000"   # S3 API
+      - "9001:9001"   # Web UI
+    environment:
+      MINIO_ROOT_USER: ${MINIO_USERNAME}
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Icecast2 ───────────────────────────────────────────────────────────────
+  icecast:
+    image: moul/icecast:latest
+    container_name: icecast
+    ports:
+      - "8000:8000"   # слушатели подключаются сюда
+    environment:
+      ICECAST_SOURCE_PASSWORD: ${ICECAST_SOURCE_PASSWORD:-hackme}
+      ICECAST_ADMIN_PASSWORD: ${ICECAST_ADMIN_PASSWORD:-admin}
+      ICECAST_RELAY_PASSWORD: ${ICECAST_RELAY_PASSWORD:-relay}
+      ICECAST_MAX_CLIENTS: 100
+      ICECAST_MAX_SOURCES: 4
+    restart: unless-stopped
+
+volumes:
+  minio_data:

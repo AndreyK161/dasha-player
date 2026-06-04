@@ -1,8 +1,20 @@
 spring:
   application:
     name: dasha.
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
 
 minio:
-  user:
-    name: ${MINIO_USERNAME}
-    password: ${MINIO_PASSWORD}
+  endpoint: ${MINIO_ENDPOINT}
+  token:
+    access: ${MINIO_ACCESS}
+    secret: ${MINIO_SECRET}
+  bucket:
+    name: ${MINIO_BUCKETNAME}
+
+icecast:
+  host: ${ICECAST_HOST:localhost}
+  port: ${ICECAST_PORT:8000}
+  mount: ${ICECAST_MOUNT:stream}
+  source:
+    password: ${ICECAST_SOURCE_PASSWORD:hackme}
