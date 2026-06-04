@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: dasha.
+
+minio:
+  user:
+    name: ${MINIO_USERNAME}
+    password: ${MINIO_PASSWORD}
