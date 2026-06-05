@@ -4,6 +4,8 @@ import com.example.dasha.models.Song;
 import io.minio.GetObjectArgs;
 import io.minio.ListObjectsArgs;
 import io.minio.MinioClient;
+import io.minio.PutObjectArgs;
+import io.minio.RemoveObjectArgs;
 import io.minio.Result;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.web.multipart.MultipartFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -99,6 +102,42 @@ public class MinioService {
             return null;
         } finally {
             if (tmp != null) try { Files.deleteIfExists(tmp); } catch (Exception ignored) {}
+        }
+    }
+
+    public String uploadSong(MultipartFile file) {
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || !originalName.toLowerCase().endsWith(".mp3")) {
+            throw new IllegalArgumentException("Only .mp3 files are allowed");
+        }
+        String objectName = SONGS_PREFIX + originalName;
+        try (InputStream is = file.getInputStream()) {
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .stream(is, file.getSize(), (long) -1)
+                            .contentType("audio/mpeg")
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to upload song to MinIO", e);
+        }
+        return objectName;
+    }
+
+    public void deleteSong(String filename) {
+        String objectName = SONGS_PREFIX + filename;
+        try {
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(objectName)
+                            .build()
+            );
+            durationCache.remove(SONGS_PREFIX + filename);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete song from MinIO", e);
         }
     }
 
