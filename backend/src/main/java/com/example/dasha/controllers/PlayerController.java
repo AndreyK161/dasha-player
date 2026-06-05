@@ -4,10 +4,8 @@ import com.example.dasha.models.Song;
 import com.example.dasha.services.MinioService;
 import com.example.dasha.services.PlayerService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +26,23 @@ public class PlayerController {
     @GetMapping("/songs")
     public ResponseEntity<List<Song>> getSongs() {
         return ResponseEntity.ok(minioService.listSongs());
+    }
+
+    // Загрузить трек
+    @PostMapping("/songs/upload")
+    public ResponseEntity<Map<String, String>> uploadSong(@RequestParam("file") MultipartFile file) {
+        String objectName = minioService.uploadSong(file);
+        return ResponseEntity.ok(Map.of("status", "uploaded", "objectName", objectName));
+    }
+
+    @DeleteMapping("/songs")
+    public ResponseEntity<Map<String, String>> deleteSong(@RequestParam String objectName) {
+        var current = playerService.getCurrentSong();
+        if (current != null && current.getFileKey().equals("songs/" + objectName)) {
+            return ResponseEntity.status(409).body(Map.of("error", "Трек сейчас играет в эфире"));
+        }
+        minioService.deleteSong(objectName);
+        return ResponseEntity.ok(Map.of("status", "deleted"));
     }
 
     // Запустить плейлист — все песни по кругу

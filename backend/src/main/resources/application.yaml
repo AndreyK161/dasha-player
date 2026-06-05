@@ -3,6 +3,19 @@ spring:
     name: dasha.
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+admin:
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration-ms: 900000
+  refresh-expiration-ms: 604800000
 
 minio:
   endpoint: ${MINIO_ENDPOINT}
