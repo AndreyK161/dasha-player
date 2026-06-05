@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { fetchStreamStatus } from './api/songs'
+import type { Song } from './types/song'
+import './styles/shared.css'
 import './App.css'
 
 const ICECAST_URL = '/stream'
-
-interface Song {
-  songName: string
-  artist: string
-  duration: number | null
-}
 
 function App() {
   const [song, setSong] = useState<Song | null>(null)
@@ -25,18 +23,15 @@ function App() {
   }
 
   useEffect(() => {
-    const fetchStatus = async () => {
+    const poll = async () => {
       try {
-        const res = await fetch('/api/stream/status')
-        const data = await res.json()
+        const data = await fetchStreamStatus()
         const newSong: Song | null = data.currentSong ?? null
         setSong(newSong)
         setPosition(data.positionSeconds ?? 0)
 
         const newKey = newSong ? `${newSong.songName}-${newSong.artist}` : null
-        if (playing && newKey && newKey !== prevSongRef.current) {
-          reconnectAudio()
-        }
+        if (playing && newKey && newKey !== prevSongRef.current) reconnectAudio()
         prevSongRef.current = newKey
       } catch {
         setSong(null)
@@ -44,9 +39,9 @@ function App() {
       }
     }
 
-    fetchStatus()
-    const poll = setInterval(fetchStatus, 2000)
-    return () => clearInterval(poll)
+    poll()
+    const interval = setInterval(poll, 2000)
+    return () => clearInterval(interval)
   }, [playing])
 
   useEffect(() => {
@@ -74,9 +69,16 @@ function App() {
 
   return (
     <div className="page">
+      <header className="header">
+        <span className={`live-indicator${song ? ' live-indicator--on' : ''}`}>
+          <span className="live-dot" />
+          {song ? 'в эфире' : 'эфир не идёт'}
+        </span>
+        <Link to="/admin" className="link">Войти</Link>
+      </header>
       <main className="center">
         <div className="player">
-          <h1 className="title" onClick={handleClick}>dasha.</h1>
+          <h1 className="title title--clickable" onClick={handleClick}>dasha.</h1>
           <div className="progress-bar">
             <div className="progress-fill" style={{ width: `${progress * 100}%` }} />
           </div>
