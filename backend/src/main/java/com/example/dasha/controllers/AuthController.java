@@ -32,9 +32,27 @@ public class AuthController {
         String password = body.get("password");
 
         if (adminUsername.equals(username) && adminPassword.equals(password)) {
-            return ResponseEntity.ok(Map.of("token", jwtService.generateToken(username)));
+            return ResponseEntity.ok(Map.of(
+                    "token", jwtService.generateToken(username),
+                    "refreshToken", jwtService.generateRefreshToken(username)
+            ));
         }
 
         return ResponseEntity.status(401).body(Map.of("error", "Invalid credentials"));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody Map<String, String> body) {
+        String refreshToken = body.get("refreshToken");
+
+        if (refreshToken == null || !jwtService.isValid(refreshToken) || !jwtService.isRefreshToken(refreshToken)) {
+            return ResponseEntity.status(401).body(Map.of("error", "Invalid refresh token"));
+        }
+
+        String username = jwtService.extractUsername(refreshToken);
+        return ResponseEntity.ok(Map.of(
+                "token", jwtService.generateToken(username),
+                "refreshToken", jwtService.generateRefreshToken(username)
+        ));
     }
 }

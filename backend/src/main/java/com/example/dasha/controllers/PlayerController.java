@@ -37,6 +37,10 @@ public class PlayerController {
 
     @DeleteMapping("/songs")
     public ResponseEntity<Map<String, String>> deleteSong(@RequestParam String objectName) {
+        var current = playerService.getCurrentSong();
+        if (current != null && current.getFileKey().equals("songs/" + objectName)) {
+            return ResponseEntity.status(409).body(Map.of("error", "Трек сейчас играет в эфире"));
+        }
         minioService.deleteSong(objectName);
         return ResponseEntity.ok(Map.of("status", "deleted"));
     }

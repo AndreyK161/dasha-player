@@ -54,19 +54,37 @@ public class PlayerService {
         }
 
         streamThread = Thread.ofVirtual().start(() -> {
+            String lastPlayedKey = null;
             while (streaming.get() && !Thread.currentThread().isInterrupted()) {
                 List<com.example.dasha.models.Song> songs = minioService.listSongs();
+                songs.sort(java.util.Comparator.comparing(com.example.dasha.models.Song::getFileKey));
                 if (songs.isEmpty()) {
                     log.warning("Playlist is empty, stopping.");
                     break;
                 }
-                for (com.example.dasha.models.Song song : songs) {
-                    if (!streaming.get() || Thread.currentThread().isInterrupted()) break;
-                    log.info("Playing next: " + song.getFileKey());
-                    currentSong = song;
-                    streamStartMillis = System.currentTimeMillis();
+
+                int nextIndex = 0;
+                if (lastPlayedKey != null) {
+                    for (int i = 0; i < songs.size(); i++) {
+                        if (songs.get(i).getFileKey().equals(lastPlayedKey)) {
+                            nextIndex = (i + 1) % songs.size();
+                            break;
+                        }
+                    }
+                }
+
+                com.example.dasha.models.Song song = songs.get(nextIndex);
+                lastPlayedKey = song.getFileKey();
+
+                if (!streaming.get() || Thread.currentThread().isInterrupted()) break;
+                log.info("Playing next: " + song.getFileKey());
+                currentSong = song;
+                streamStartMillis = System.currentTimeMillis();
+                try {
                     InputStream songStream = minioService.getSongStream(song.getFileKey());
                     pushToIcecast(songStream, song.getFileKey());
+                } catch (RuntimeException e) {
+                    log.warning("Skipping unavailable track: " + song.getFileKey());
                 }
             }
             streaming.set(false);
