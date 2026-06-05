@@ -1,0 +1,56 @@
+.page {
+  min-height: 100vh;
+  background-color: #CEE3FA;
+  display: flex;
+  flex-direction: column;
+}
+
+.page--fixed {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.title {
+  color: #2d2d2d;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 72px;
+  font-weight: 400;
+  letter-spacing: -1px;
+  margin: 0;
+}
+
+.footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: #2d2d2d;
+  opacity: 0.5;
+}
+
+.link {
+  color: #2d2d2d;
+  text-decoration: none;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.link:hover {
+  opacity: 1;
+}
+
+.title--clickable {
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.title--clickable:hover {
+  transform: scale(1.06);
+}
+
+.title--clickable:active {
+  transform: scale(1.03);
+}
