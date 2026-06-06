@@ -24,6 +24,7 @@ function AdminPanel() {
   const [streaming, setStreaming] = useState(false)
   const [currentSong, setCurrentSong] = useState<Song | null>(null)
   const [streamLoading, setStreamLoading] = useState(false)
+  const [streamError, setStreamError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const navigate = useNavigate()
 
@@ -52,6 +53,7 @@ function AdminPanel() {
 
   const handleStreamToggle = async () => {
     setStreamLoading(true)
+    setStreamError(null)
     try {
       if (streaming) {
         await stopStream()
@@ -59,6 +61,9 @@ function AdminPanel() {
         await startStream()
       }
       await loadStatus()
+    } catch {
+      setStreamError('Сервер трансляции недоступен')
+      setTimeout(() => setStreamError(null), 3000)
     } finally {
       setStreamLoading(false)
     }
@@ -115,7 +120,11 @@ function AdminPanel() {
 
         <div className="stream-control">
           <span className="stream-track">
-            {streaming && currentSong ? `${currentSong.songName} – ${currentSong.artist}` : ' '}
+            {streamError
+              ? streamError
+              : streaming && currentSong
+              ? `${currentSong.songName} – ${currentSong.artist}`
+              : "Сервер трансляции не запущен"}
           </span>
           <button
             className={`stream-btn${streaming ? ' stream-btn--live' : ''}`}
