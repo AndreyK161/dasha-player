@@ -19,6 +19,8 @@ function AdminPanel() {
   const [uploading, setUploading] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [deleteErrorHidden, setDeleteErrorHidden] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [uploadErrorHidden, setUploadErrorHidden] = useState(false)
   const [streaming, setStreaming] = useState(false)
   const [currentSong, setCurrentSong] = useState<Song | null>(null)
   const [streamLoading, setStreamLoading] = useState(false)
@@ -62,14 +64,27 @@ function AdminPanel() {
     }
   }
 
+  const showUploadError = (msg: string) => {
+    setUploadError(msg)
+    setUploadErrorHidden(false)
+    setTimeout(() => setUploadErrorHidden(true), 2500)
+    setTimeout(() => setUploadError(null), 3000)
+  }
+
   const handleUpload = async (file: File) => {
-    if (!file.name.toLowerCase().endsWith('.mp3')) return
+    if (!file.name.toLowerCase().endsWith('.mp3')) {
+      showUploadError('Только .mp3 файлы')
+      return
+    }
     setUploading(true)
     try {
       await uploadSong(file)
       await loadSongs()
+    } catch (e: any) {
+      showUploadError(e.message === '400' ? 'Файл повреждён или не является MP3' : 'Ошибка загрузки')
     } finally {
       setUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
@@ -128,6 +143,11 @@ function AdminPanel() {
           />
         </div>
 
+        {uploadError && (
+          <p className={`delete-error${uploadErrorHidden ? ' delete-error--hidden' : ''}`}>
+            {uploadError}
+          </p>
+        )}
         {deleteError && (
           <p className={`delete-error${deleteErrorHidden ? ' delete-error--hidden' : ''}`}>
             {deleteError}
