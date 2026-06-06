@@ -14,6 +14,7 @@ public class Song {
     private String fileKey;
 
     public Song(String songName, String artist, Double duration, String fileKey) {
+        this.guid = UUID.randomUUID();
         this.songName = songName;
         this.artist = artist;
         this.duration = duration;

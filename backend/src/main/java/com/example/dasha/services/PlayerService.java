@@ -1,5 +1,6 @@
 package com.example.dasha.services;
 
+import com.example.dasha.models.Song;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -7,7 +8,9 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.Socket;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -37,7 +40,7 @@ public class PlayerService {
     private final AtomicBoolean streaming = new AtomicBoolean(false);
     private Thread streamThread;
     @Getter
-    private volatile com.example.dasha.models.Song currentSong;
+    private volatile Song currentSong;
     private volatile long streamStartMillis = 0;
 
     public PlayerService(MinioService minioService) {
@@ -45,9 +48,6 @@ public class PlayerService {
     }
 
 
-    /**
-     * Запускает непрерывный плейлист: все песни из MinIO по кругу.
-     */
     public void startPlaylist() {
         if (streaming.getAndSet(true)) {
             stopStream();
@@ -56,8 +56,8 @@ public class PlayerService {
         streamThread = Thread.ofVirtual().start(() -> {
             String lastPlayedKey = null;
             while (streaming.get() && !Thread.currentThread().isInterrupted()) {
-                List<com.example.dasha.models.Song> songs = minioService.listSongs();
-                songs.sort(java.util.Comparator.comparing(com.example.dasha.models.Song::getFileKey));
+                List<Song> songs = minioService.listSongs();
+                songs.sort(Comparator.comparing(Song::getFileKey));
                 if (songs.isEmpty()) {
                     log.warning("Playlist is empty, stopping.");
                     break;
@@ -73,7 +73,7 @@ public class PlayerService {
                     }
                 }
 
-                com.example.dasha.models.Song song = songs.get(nextIndex);
+                Song song = songs.get(nextIndex);
                 lastPlayedKey = song.getFileKey();
 
                 if (!streaming.get() || Thread.currentThread().isInterrupted()) break;
@@ -108,14 +108,11 @@ public class PlayerService {
         return (System.currentTimeMillis() - streamStartMillis) / 1000.0;
     }
 
-    // -------------------------------------------------------------------------
-
     private void pushToIcecast(InputStream songStream, String fileKey) {
         Process ffmpeg = null;
         java.net.Socket socket = null;
 
         try {
-            // 1. Запускаем ffmpeg
             ProcessBuilder pb = new ProcessBuilder(
                     "ffmpeg",
                     "-re",
@@ -130,8 +127,8 @@ public class PlayerService {
             pb.redirectErrorStream(false);
             ffmpeg = pb.start();
 
-            // 2. Raw socket к Icecast — HttpURLConnection буферизует и не подходит для стриминга
-            socket = new java.net.Socket(icecastHost, icecastPort);
+            // raw socket — HttpURLConnection буферизует и не подходит для стриминга
+            socket = new Socket(icecastHost, icecastPort);
             socket.setSoTimeout(0);
             OutputStream socketOut = socket.getOutputStream();
 
@@ -145,12 +142,9 @@ public class PlayerService {
 
             OutputStream ffmpegIn  = ffmpeg.getOutputStream();
             InputStream  ffmpegOut = ffmpeg.getInputStream();
-            InputStream  ffmpegErr = ffmpeg.getErrorStream();
+            ffmpeg.getErrorStream();
 
-            // 4. MinIO → ffmpeg stdin
             Thread feeder = Thread.ofVirtual().start(() -> pipe(songStream, ffmpegIn, true));
-
-            // 5. ffmpeg stdout → Icecast socket
             pipe(ffmpegOut, socketOut, false);
 
             feeder.join();
