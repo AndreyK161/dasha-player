@@ -8,7 +8,7 @@ export async function apiFetch(input: string, init: RequestInit = {}): Promise<R
 
   let res = await fetch(input, withAuth(getToken() ?? ''))
 
-  if (res.status === 401) {
+  if (res.status === 401 || res.status === 403) {
     const refreshed = await tryRefresh()
     if (refreshed) {
       res = await fetch(input, withAuth(getToken() ?? ''))
