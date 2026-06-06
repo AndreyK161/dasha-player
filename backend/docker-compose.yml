@@ -7,10 +7,17 @@ services:
     ports:
       - "8080:8080"
     environment:
+      # Admin
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      # JWT
+      JWT_SECRET: ${JWT_SECRET}
+      # Spring profile
+      SPRING_PROFILES_ACTIVE: prod
       # MinIO
       MINIO_ENDPOINT: http://minio:9000
-      MINIO_ACCESS: ${MINIO_ACCESS}
-      MINIO_SECRET: ${MINIO_SECRET}
+      MINIO_ACCESS: ${MINIO_USERNAME}
+      MINIO_SECRET: ${MINIO_PASSWORD}
       MINIO_BUCKETNAME: ${MINIO_BUCKETNAME:-player}
       # Icecast
       ICECAST_HOST: icecast

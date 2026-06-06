@@ -97,10 +97,26 @@ public class MinioService {
         }
     }
 
+    private boolean isMp3(MultipartFile file) {
+        try (InputStream is = file.getInputStream()) {
+            byte[] header = new byte[3];
+            if (is.read(header) < 3) return false;
+            // ID3 tag
+            if (header[0] == 'I' && header[1] == 'D' && header[2] == '3') return true;
+            // MPEG sync word (0xFF 0xFx)
+            return (header[0] & 0xFF) == 0xFF && (header[1] & 0xE0) == 0xE0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public String uploadSong(MultipartFile file) {
         String originalName = file.getOriginalFilename();
         if (originalName == null || !originalName.toLowerCase().endsWith(".mp3")) {
             throw new IllegalArgumentException("Only .mp3 files are allowed");
+        }
+        if (!isMp3(file)) {
+            throw new IllegalArgumentException("File content is not a valid MP3");
         }
         String objectName = SONGS_PREFIX + originalName;
         try (InputStream is = file.getInputStream()) {
@@ -121,12 +137,12 @@ public class MinioService {
     public void deleteSong(String filename) {
         String objectName = SONGS_PREFIX + filename;
         try {
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder()
-                            .bucket(bucketName)
-                            .object(objectName)
-                            .build()
-            );
+            minioClient.statObject(StatObjectArgs.builder().bucket(bucketName).object(objectName).build());
+        } catch (Exception e) {
+            throw new java.util.NoSuchElementException("Song not found: " + filename);
+        }
+        try {
+            minioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(objectName).build());
             durationCache.remove(objectName);
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete song from MinIO", e);
