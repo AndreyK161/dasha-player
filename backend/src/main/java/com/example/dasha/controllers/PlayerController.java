@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api")
@@ -30,8 +31,12 @@ public class PlayerController {
 
     @PostMapping("/songs/upload")
     public ResponseEntity<Map<String, String>> uploadSong(@RequestParam("file") MultipartFile file) {
-        String objectName = minioService.uploadSong(file);
-        return ResponseEntity.ok(Map.of("status", "uploaded", "objectName", objectName));
+        try {
+            String objectName = minioService.uploadSong(file);
+            return ResponseEntity.ok(Map.of("status", "uploaded", "objectName", objectName));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/songs")
@@ -40,8 +45,12 @@ public class PlayerController {
         if (current != null && current.getFileKey().equals("songs/" + objectName)) {
             return ResponseEntity.status(409).body(Map.of("error", "Трек сейчас играет в эфире"));
         }
-        minioService.deleteSong(objectName);
-        return ResponseEntity.ok(Map.of("status", "deleted"));
+        try {
+            minioService.deleteSong(objectName);
+            return ResponseEntity.ok(Map.of("status", "deleted"));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(404).body(Map.of("error", "Song not found"));
+        }
     }
 
     @PostMapping("/stream/play-all")
