@@ -59,8 +59,9 @@ public class PlayerService {
                 List<Song> songs = minioService.listSongs();
                 songs.sort(Comparator.comparing(Song::getFileKey));
                 if (songs.isEmpty()) {
-                    log.warning("Playlist is empty, stopping.");
-                    break;
+                    log.warning("Playlist is empty, waiting for tracks...");
+                    try { Thread.sleep(3000); } catch (InterruptedException e) { Thread.currentThread().interrupt(); break; }
+                    continue;
                 }
 
                 int nextIndex = 0;
