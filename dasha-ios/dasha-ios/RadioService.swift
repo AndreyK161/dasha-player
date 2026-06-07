@@ -1,5 +1,6 @@
 import Foundation
 import AVFoundation
+import MediaPlayer
 
 // Модель трека — как Song.java на бэкенде
 struct Song: Decodable {
@@ -27,6 +28,7 @@ class RadioService: ObservableObject {
     private var prevSongKey: String? = nil
 
     func start() {
+        setupRemoteCommands()
         fetch()
         timer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
             self.fetch()
@@ -51,11 +53,8 @@ class RadioService: ObservableObject {
             let item = AVPlayerItem(url: url)
             player = AVPlayer(playerItem: item)
             player?.play()
-            print("Player status: \(player?.status.rawValue ?? -1)")
-            NotificationCenter.default.addObserver(forName: .AVPlayerItemFailedToPlayToEndTime, object: item, queue: .main) { n in
-                print("Stream error: \(n.userInfo?[AVPlayerItemFailedToPlayToEndTimeErrorKey] ?? "unknown")")
-            }
             playing = true
+            updateNowPlaying()
         }
     }
 
@@ -72,6 +71,8 @@ class RadioService: ObservableObject {
                     }
                     if self.playing, let newKey, newKey != self.prevSongKey {
                         self.reconnect()
+                    } else if self.playing {
+                        self.updateNowPlaying()
                     }
                     self.prevSongKey = newKey
                 }
@@ -85,5 +86,30 @@ class RadioService: ObservableObject {
         let item = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: item)
         player?.play()
+        updateNowPlaying()
+    }
+
+    private func updateNowPlaying() {
+        var info = [String: Any]()
+        info[MPMediaItemPropertyTitle] = status?.currentSong?.songName ?? "dasha."
+        info[MPMediaItemPropertyArtist] = status?.currentSong?.artist ?? "dasha. radio"
+        info[MPNowPlayingInfoPropertyIsLiveStream] = true
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+    }
+
+    private func setupRemoteCommands() {
+        let center = MPRemoteCommandCenter.shared()
+        center.playCommand.addTarget { [weak self] _ in
+            self?.togglePlay()
+            return .success
+        }
+        center.pauseCommand.addTarget { [weak self] _ in
+            self?.togglePlay()
+            return .success
+        }
+        center.stopCommand.addTarget { [weak self] _ in
+            self?.togglePlay()
+            return .success
+        }
     }
 }
