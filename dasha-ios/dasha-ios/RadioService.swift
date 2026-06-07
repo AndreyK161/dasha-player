@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import MediaPlayer
+import UIKit
 
 // Модель трека — как Song.java на бэкенде
 struct Song: Decodable {
@@ -21,8 +22,8 @@ class RadioService: ObservableObject {
     @Published var status: StreamStatus? = nil
     @Published var playing: Bool = false
 
-    private let statusUrl = URL(string: "http://localhost:8080/api/stream/status")!
-    private let streamUrl = URL(string: "http://localhost:8080/stream")!
+    private let statusUrl = URL(string: "http://192.168.0.100:8080/api/stream/status")!
+    private let streamUrl = URL(string: "http://192.168.0.100:8080/stream")!
     private var timer: Timer?
     private var player: AVPlayer?
     private var prevSongKey: String? = nil
@@ -41,7 +42,6 @@ class RadioService: ObservableObject {
     }
 
     func togglePlay() {
-        print("togglePlay called, playing = \(playing)")
         if playing {
             player?.pause()
             player = nil
@@ -49,7 +49,7 @@ class RadioService: ObservableObject {
         } else {
             try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .default)
             try? AVAudioSession.sharedInstance().setActive(true)
-            let url = URL(string: "http://localhost:8000/stream?t=\(Date().timeIntervalSince1970)")!
+            let url = URL(string: "http://192.168.0.100:8000/stream?t=\(Date().timeIntervalSince1970)")!
             let item = AVPlayerItem(url: url)
             player = AVPlayer(playerItem: item)
             player?.play()
@@ -82,7 +82,7 @@ class RadioService: ObservableObject {
 
     private func reconnect() {
         player?.pause()
-        let url = URL(string: "http://localhost:8000/stream?t=\(Date().timeIntervalSince1970)")!
+        let url = URL(string: "http://192.168.0.100:8000/stream?t=\(Date().timeIntervalSince1970)")!
         let item = AVPlayerItem(url: url)
         player = AVPlayer(playerItem: item)
         player?.play()
@@ -94,6 +94,18 @@ class RadioService: ObservableObject {
         info[MPMediaItemPropertyTitle] = status?.currentSong?.songName ?? "dasha."
         info[MPMediaItemPropertyArtist] = status?.currentSong?.artist ?? "dasha. radio"
         info[MPNowPlayingInfoPropertyIsLiveStream] = true
+        if let iconImage = UIImage(named: "NowPlayingArtwork") {
+            let size = CGSize(width: 1024, height: 1024)
+            let artwork = MPMediaItemArtwork(boundsSize: size) { _ in
+                let renderer = UIGraphicsImageRenderer(size: size)
+                return renderer.image { ctx in
+                    UIColor(red: 0.808, green: 0.890, blue: 0.980, alpha: 1).setFill()
+                    ctx.fill(CGRect(origin: .zero, size: size))
+                    iconImage.draw(in: CGRect(origin: .zero, size: size))
+                }
+            }
+            info[MPMediaItemPropertyArtwork] = artwork
+        }
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
     }
 

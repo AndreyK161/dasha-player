@@ -24,18 +24,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		928047602FD55945000805C5 /* dasha-ios.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dasha-ios.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		928047602FD55945000805C5 /* dasha..app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dasha..app; sourceTree = BUILT_PRODUCTS_DIR; };
 		928047702FD55947000805C5 /* dasha-iosTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "dasha-iosTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9280477A2FD55947000805C5 /* dasha-iosUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "dasha-iosUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		928047DB2FD574AD000805C5 /* Exceptions for "dasha-ios" folder in "dasha-ios" target */ = {
+		928047DB2FD574AD000805C5 /* Exceptions for "dasha-ios" folder in "dasha." target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 9280475F2FD55945000805C5 /* dasha-ios */;
+			target = 9280475F2FD55945000805C5 /* dasha. */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -43,7 +43,7 @@
 		928047622FD55945000805C5 /* dasha-ios */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				928047DB2FD574AD000805C5 /* Exceptions for "dasha-ios" folder in "dasha-ios" target */,
+				928047DB2FD574AD000805C5 /* Exceptions for "dasha-ios" folder in "dasha." target */,
 			);
 			path = "dasha-ios";
 			sourceTree = "<group>";
@@ -98,7 +98,7 @@
 		928047612FD55945000805C5 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				928047602FD55945000805C5 /* dasha-ios.app */,
+				928047602FD55945000805C5 /* dasha..app */,
 				928047702FD55947000805C5 /* dasha-iosTests.xctest */,
 				9280477A2FD55947000805C5 /* dasha-iosUITests.xctest */,
 			);
@@ -108,9 +108,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		9280475F2FD55945000805C5 /* dasha-ios */ = {
+		9280475F2FD55945000805C5 /* dasha. */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 928047842FD55947000805C5 /* Build configuration list for PBXNativeTarget "dasha-ios" */;
+			buildConfigurationList = 928047842FD55947000805C5 /* Build configuration list for PBXNativeTarget "dasha." */;
 			buildPhases = (
 				9280475C2FD55945000805C5 /* Sources */,
 				9280475D2FD55945000805C5 /* Frameworks */,
@@ -123,11 +123,11 @@
 			fileSystemSynchronizedGroups = (
 				928047622FD55945000805C5 /* dasha-ios */,
 			);
-			name = "dasha-ios";
+			name = dasha.;
 			packageProductDependencies = (
 			);
 			productName = "dasha-ios";
-			productReference = 928047602FD55945000805C5 /* dasha-ios.app */;
+			productReference = 928047602FD55945000805C5 /* dasha..app */;
 			productType = "com.apple.product-type.application";
 		};
 		9280476F2FD55947000805C5 /* dasha-iosTests */ = {
@@ -213,7 +213,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				9280475F2FD55945000805C5 /* dasha-ios */,
+				9280475F2FD55945000805C5 /* dasha. */,
 				9280476F2FD55947000805C5 /* dasha-iosTests */,
 				928047792FD55947000805C5 /* dasha-iosUITests */,
 			);
@@ -271,12 +271,12 @@
 /* Begin PBXTargetDependency section */
 		928047722FD55947000805C5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 9280475F2FD55945000805C5 /* dasha-ios */;
+			target = 9280475F2FD55945000805C5 /* dasha. */;
 			targetProxy = 928047712FD55947000805C5 /* PBXContainerItemProxy */;
 		};
 		9280477C2FD55947000805C5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 9280475F2FD55945000805C5 /* dasha-ios */;
+			target = 9280475F2FD55945000805C5 /* dasha. */;
 			targetProxy = 9280477B2FD55947000805C5 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -413,10 +413,13 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "dasha-ios/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = dasha.;
+				"INFOPLIST_KEY_CFBundleDisplayName[sdk=iphoneos*]" = dasha.;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -444,10 +447,13 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "dasha-ios/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = dasha.;
+				"INFOPLIST_KEY_CFBundleDisplayName[sdk=iphoneos*]" = dasha.;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.music";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = "Launch Screen";
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -543,7 +549,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		928047842FD55947000805C5 /* Build configuration list for PBXNativeTarget "dasha-ios" */ = {
+		928047842FD55947000805C5 /* Build configuration list for PBXNativeTarget "dasha." */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				928047852FD55947000805C5 /* Debug */,

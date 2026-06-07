@@ -38,13 +38,13 @@ struct ContentView: View {
                         Circle()
                             .fill(Color(red: 0.176, green: 0.176, blue: 0.176))
                             .frame(width: 6, height: 6)
-                            .opacity(isLive ? (dotVisible ? 1.0 : 0.3) : 0.3)
-                        Text("в эфире")
+                            .opacity(isLive ? (dotVisible ? 1.0 : 0.3) : 1.0)
+                        Text(isLive ? "в эфире" : "эфир не идёт")
                             .font(.system(size: 13))
                             .tracking(0.4)
                             .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
-                            .opacity(isLive ? 0.7 : 0.3)
                     }
+                    .opacity(isLive ? 0.7 : 0.3)
                     Spacer()
                 }
                 .padding(.horizontal, 32)
