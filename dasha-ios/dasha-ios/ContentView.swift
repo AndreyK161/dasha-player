@@ -1,6 +1,31 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var radio = RadioService()
+    @State private var dotVisible: Bool = true
+    @GestureState private var isPressed: Bool = false
+
+    var trackText: String {
+        guard let song = radio.status?.currentSong else {
+            return "Unknown Track – Unknown Artist"
+        }
+        let name = song.songName ?? "Unknown Track"
+        let artist = song.artist ?? "Unknown Artist"
+        return "\(name) – \(artist)"
+    }
+
+    var progress: Double {
+        guard let song = radio.status?.currentSong,
+              let duration = song.duration,
+              let position = radio.status?.positionSeconds,
+              duration > 0 else { return 0 }
+        return min(Double(position) / duration, 1.0)
+    }
+
+    var isLive: Bool {
+        radio.status?.streaming == true
+    }
+
     var body: some View {
         ZStack {
             Color(red: 0.808, green: 0.890, blue: 0.980)
@@ -9,11 +34,17 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Text("в эфире")
-                        .font(.system(size: 13))
-                        .tracking(0.4)
-                        .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
-                        .opacity(0.3)
+                    HStack(spacing: 7) {
+                        Circle()
+                            .fill(Color(red: 0.176, green: 0.176, blue: 0.176))
+                            .frame(width: 6, height: 6)
+                            .opacity(isLive ? (dotVisible ? 1.0 : 0.3) : 0.3)
+                        Text("в эфире")
+                            .font(.system(size: 13))
+                            .tracking(0.4)
+                            .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                            .opacity(isLive ? 0.7 : 0.3)
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, 32)
@@ -26,6 +57,13 @@ struct ContentView: View {
                     .font(.system(size: 72, weight: .regular))
                     .tracking(-1)
                     .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                    .scaleEffect(isPressed ? 1.03 : 1.0)
+                    .animation(.easeInOut(duration: 0.2), value: isPressed)
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .updating($isPressed) { _, state, _ in state = true }
+                            .onEnded { _ in radio.togglePlay() }
+                    )
 
                 VStack(spacing: 24) {
                     // Progress bar
@@ -36,12 +74,14 @@ struct ContentView: View {
                                 .frame(height: 4)
                             RoundedRectangle(cornerRadius: 999)
                                 .fill(Color(red: 0.176, green: 0.176, blue: 0.176))
-                                .frame(width: geo.size.width * 0.4, height: 4)
+                                .frame(width: geo.size.width * progress, height: 4)
+                                .animation(.linear(duration: 1), value: progress)
                         }
                     }
                     .frame(width: 200, height: 4)
+
                     // Track info
-                    Text("Unknown Track – Unknown Artist")
+                    Text(trackText)
                         .font(.system(size: 14))
                         .tracking(0.3)
                         .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
@@ -75,6 +115,15 @@ struct ContentView: View {
                     .padding(24)
             }
         }
+        .onAppear {
+            radio.start()
+            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+                withAnimation(.easeInOut(duration: 0.8)) {
+                    dotVisible.toggle()
+                }
+            }
+        }
+        .onDisappear { radio.stop() }
     }
 }
 
