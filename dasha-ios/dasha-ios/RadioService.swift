@@ -24,6 +24,7 @@ class RadioService: ObservableObject {
     private let streamUrl = URL(string: "http://localhost:8080/stream")!
     private var timer: Timer?
     private var player: AVPlayer?
+    private var prevSongKey: String? = nil
 
     func start() {
         fetch()
@@ -64,8 +65,25 @@ class RadioService: ObservableObject {
             if let decoded = try? JSONDecoder().decode(StreamStatus.self, from: data) {
                 DispatchQueue.main.async {
                     self.status = decoded
+
+                    // Переподключаемся если трек сменился — как reconnectAudio() на вебе
+                    let newKey = decoded.currentSong.flatMap { s in
+                        s.songName.map { "\($0)-\(s.artist ?? "")" }
+                    }
+                    if self.playing, let newKey, newKey != self.prevSongKey {
+                        self.reconnect()
+                    }
+                    self.prevSongKey = newKey
                 }
             }
         }.resume()
+    }
+
+    private func reconnect() {
+        player?.pause()
+        let url = URL(string: "http://localhost:8000/stream?t=\(Date().timeIntervalSince1970)")!
+        let item = AVPlayerItem(url: url)
+        player = AVPlayer(playerItem: item)
+        player?.play()
     }
 }
