@@ -10,6 +10,7 @@
 |------|-----------|
 | Backend | Java 21, Spring Boot 3, Spring Security, JWT |
 | Frontend | React, TypeScript, Vite |
+| iOS | Swift, SwiftUI, AVFoundation |
 | Стриминг | Icecast2 |
 | Хранилище | MinIO (S3-compatible) |
 | Инфраструктура | Docker Compose |
@@ -20,8 +21,25 @@
 ├── backend/       # Spring Boot приложение
 │   ├── Dockerfile
 │   └── docker-compose.yml
-└── frontend/      # React приложение
+├── frontend/      # React приложение
+└── dasha-ios/     # iOS приложение (Swift)
 ```
+
+## iOS
+
+Нативное приложение для iPhone. Слушает эфир, показывает текущий трек, поддерживает управление с экрана блокировки и виджета.
+
+<img width="1170" height="2532" alt="IMG_1360" src="https://github.com/user-attachments/assets/3d81fd99-dfe5-4087-a168-70ae369f5eda" />
+
+### Запуск на устройстве
+
+1. Открыть `dasha-ios/dasha-ios.xcodeproj` в Xcode
+2. Скопировать конфиг: `cp dasha-ios/Config.example.swift.txt dasha-ios/Config.swift`
+3. Указать IP своего сервера в `Config.swift`:
+```swift
+static let baseHost = "192.168.x.x"
+```
+4. Подключить iPhone и запустить через Xcode
 
 ## Запуск
 
