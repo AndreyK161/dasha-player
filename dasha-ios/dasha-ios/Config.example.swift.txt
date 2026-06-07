@@ -1,0 +1,9 @@
+// Скопируйте этот файл в Config.swift и укажите IP вашего сервера
+enum Config {
+    static let baseHost   = "YOUR_SERVER_IP"
+    static let apiPort    = 8080
+    static let streamPort = 8000
+
+    static let statusURL = URL(string: "http://\(baseHost):\(apiPort)/api/stream/status")!
+    static let streamURL  = URL(string: "http://\(baseHost):\(streamPort)/stream")!
+}

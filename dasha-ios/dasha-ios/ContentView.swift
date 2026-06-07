@@ -1,21 +1,25 @@
 import SwiftUI
 
+// Цвета приложения
+private extension Color {
+    static let appBackground = Color(red: 0.808, green: 0.890, blue: 0.980)
+    static let appPrimary    = Color(red: 0.176, green: 0.176, blue: 0.176)
+    static let appTrack      = Color(red: 0.75,  green: 0.75,  blue: 0.75)
+}
+
 struct ContentView: View {
     @StateObject private var radio = RadioService()
-    @State private var dotVisible: Bool = true
     @GestureState private var isPressed: Bool = false
 
     var trackText: String {
-        guard let song = radio.status?.currentSong else {
-            return "Unknown Track – Unknown Artist"
-        }
-        let name = song.songName ?? "Unknown Track"
-        let artist = song.artist ?? "Unknown Artist"
+        guard let song = radio.status?.currentSong else { return "" }
+        let name   = song.songName ?? "Неизвестный трек"
+        let artist = song.artist   ?? "Неизвестный артист"
         return "\(name) – \(artist)"
     }
 
     var progress: Double {
-        guard let song = radio.status?.currentSong,
+        guard let song     = radio.status?.currentSong,
               let duration = song.duration,
               let position = radio.status?.positionSeconds,
               duration > 0 else { return 0 }
@@ -28,21 +32,20 @@ struct ContentView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.808, green: 0.890, blue: 0.980)
-                .ignoresSafeArea()
+            Color.appBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
                 HStack {
                     HStack(spacing: 7) {
                         Circle()
-                            .fill(Color(red: 0.176, green: 0.176, blue: 0.176))
+                            .fill(Color.appPrimary)
                             .frame(width: 6, height: 6)
-                            .opacity(isLive ? (dotVisible ? 1.0 : 0.3) : 1.0)
+                            .opacity(isLive ? (radio.dotVisible ? 1.0 : 0.3) : 1.0)
                         Text(isLive ? "в эфире" : "эфир не идёт")
                             .font(.system(size: 13))
                             .tracking(0.4)
-                            .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                            .foregroundColor(.appPrimary)
                     }
                     .opacity(isLive ? 0.7 : 0.3)
                     Spacer()
@@ -50,13 +53,13 @@ struct ContentView: View {
                 .padding(.horizontal, 32)
                 .padding(.vertical, 24)
 
-                // Center
                 Spacer()
 
+                // Кнопка play
                 Text("dasha.")
                     .font(.system(size: 72, weight: .regular))
                     .tracking(-1)
-                    .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                    .foregroundColor(.appPrimary)
                     .scaleEffect(isPressed ? 1.03 : 1.0)
                     .animation(.easeInOut(duration: 0.2), value: isPressed)
                     .gesture(
@@ -66,40 +69,36 @@ struct ContentView: View {
                     )
 
                 VStack(spacing: 24) {
-                    // Progress bar
+                    // Прогресс-бар
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             RoundedRectangle(cornerRadius: 999)
-                                .fill(Color(red: 0.75, green: 0.75, blue: 0.75))
+                                .fill(Color.appTrack)
                                 .frame(height: 4)
                             RoundedRectangle(cornerRadius: 999)
-                                .fill(Color(red: 0.176, green: 0.176, blue: 0.176))
+                                .fill(Color.appPrimary)
                                 .frame(width: geo.size.width * progress, height: 4)
                                 .animation(.linear(duration: 1), value: progress)
                         }
                     }
                     .frame(width: 200, height: 4)
 
-                    // Track info
+                    // Название трека
                     Text(trackText)
                         .font(.system(size: 14))
                         .tracking(0.3)
-                        .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                        .foregroundColor(.appPrimary)
                         .opacity(0.7)
 
-                    // Links
+                    // Ссылки
                     HStack(spacing: 16) {
                         Link("Telegram", destination: URL(string: "https://t.me/pipakik")!)
-                            .font(.system(size: 13))
-                            .tracking(0.5)
-                            .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
-                            .opacity(0.6)
                         Link("VK", destination: URL(string: "https://vk.com/id658988396")!)
-                            .font(.system(size: 13))
-                            .tracking(0.5)
-                            .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
-                            .opacity(0.6)
                     }
+                    .font(.system(size: 13))
+                    .tracking(0.5)
+                    .foregroundColor(.appPrimary)
+                    .opacity(0.6)
                 }
                 .padding(.top, 24)
 
@@ -110,19 +109,12 @@ struct ContentView: View {
                     .font(.system(size: 11))
                     .tracking(0.5)
                     .multilineTextAlignment(.center)
-                    .foregroundColor(Color(red: 0.176, green: 0.176, blue: 0.176))
+                    .foregroundColor(.appPrimary)
                     .opacity(0.5)
                     .padding(24)
             }
         }
-        .onAppear {
-            radio.start()
-            Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-                withAnimation(.easeInOut(duration: 0.8)) {
-                    dotVisible.toggle()
-                }
-            }
-        }
+        .onAppear  { radio.start() }
         .onDisappear { radio.stop() }
     }
 }

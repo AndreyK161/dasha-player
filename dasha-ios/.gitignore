@@ -1,3 +1,6 @@
+# Конфиг с IP сервера — не коммитить
+dasha-ios/Config.swift
+
 # macOS
 .DS_Store
 **/.DS_Store
